@@ -46,7 +46,7 @@ class PointsFetcher:
                 ts, points = await self._fetch_points()
             except Exception as exc:
                 logging.warning("Exception while fetching points: ", exc_info=exc)
-                await asyncio.sleep(1)
+                await asyncio.sleep(1 - (time.time() - start_time))
                 continue
 
             parsed_points = self.parse_points(ts, points)
@@ -54,7 +54,7 @@ class PointsFetcher:
             for point in parsed_points:
                 await self.points_broker.publish(point)
             await self._save_points(parsed_points, ts)
-            await asyncio.sleep(5 - (time.time() - start_time))
+            await asyncio.sleep(1 - (time.time() - start_time))
 
     def parse_points(self, ts: int, points: list[SourcePoint]) -> list[Point]:
         result = []
