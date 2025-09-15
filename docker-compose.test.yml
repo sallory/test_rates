@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  test_rates_pg:
+    image: postgres:17.4
+    environment:
+      POSTGRES_USER: rates
+      POSTGRES_PASSWORD: rates
+      POSTGRES_DB: rates
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U rates" ]
+      interval: 1s
+      timeout: 1s
+      retries: 5
+      start_period: 1s
+    networks:
+      - test_rates_network
+
+  test_rates:
+    build:
+      context: .
+      dockerfile: build/local/rates.backend.dockerfile
+    depends_on:
+      test_rates_pg:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://rates:rates@test_rates_pg:5432/rates
+      FETCHER_BASE_URL: "https://rates.mock-server.com"
+    networks:
+      - test_rates_network
+
+networks:
+  test_rates_network:

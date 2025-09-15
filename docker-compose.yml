@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  rates_pg:
+    image: postgres:17.4
+    environment:
+      POSTGRES_USER: rates
+      POSTGRES_PASSWORD: rates
+      POSTGRES_DB: rates
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  rates:
+    build:
+      context: .
+      dockerfile: build/local/rates.backend.dockerfile
+    volumes:
+      - .:/code
+    depends_on:
+      - rates_pg
+    environment:
+      DATABASE_URL: postgresql+asyncpg://rates:rates@rates_pg:5432/rates
+      FETCHER_BASE_URL: "https://rates.emcont.com"
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:
